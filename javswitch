@@ -1,0 +1,42 @@
+#!/bin/zsh
+# Needs to be sourced (source javswitch)
+# Requires GRADLE_HOME to be set
+# Script that reads from build.gradle and modifies JAVA_HOME, GRADLE_HOME, and aliases gradle binary
+# Uses gradle 8 with jdk17 and gradle 6.9 with jdk11
+# Only supports java 17 (default) and 11, can probably add more
+# Will be sourced by sessionizer on first tmux session
+
+if [ ! -e ./build.gradle ]; then
+  return
+fi
+
+java_ver="$(grep -E 'sourceCompatibility|languageVersion' build.gradle | sed -E 's/.*[_( ]([0-9]+).*/\1/')"
+if [ -z "$java_ver" ]; then
+    echo "Java version not found in build.gradle"
+    return
+fi
+
+setopt aliases
+
+case $java_ver in 
+  "17") 
+    if [ $GRADLE_HOME = "/usr/share/java/gradle" ]; then
+      echo "Using default java version (17)"
+      return
+    fi
+
+    echo "Java version changed, reverting to default (17)"
+    export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+    export GRADLE_HOME=/usr/share/java/gradle
+    alias gradle="/bin/gradle"
+    ;;
+  "11")
+    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+    export GRADLE_HOME=/opt/gradle
+    alias gradle="/opt/gradle/bin/gradle"
+    echo "Setting JAVA_HOME to jdk11 and gradle to v6.9.3"
+    ;;
+  "*")
+    echo "Java version not configured"
+    ;;
+esac

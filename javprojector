@@ -1,0 +1,55 @@
+#!/bin/zsh
+# Because using initializr from the browser is too hard
+# Script that creates a java project using the spring initializr
+# Adds dependencies for a rest api backend with webflux and psqldb
+# Requires that the $PACKAGE_DOMAIN var is set with the domain to use as package
+# org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0 Can be added after for swagger ui
+# Default is java 17
+
+if [ -z PACKAGE_DOMAIN ]; then
+  echo "env PACKAGE_DOMAIN not set, exitting..."
+  exit 1
+fi
+
+opts=("java" "kotlin" "groovy")
+lang=$(printf "%s\n" "${opts[@]}" | fzf)
+if [ -z "$lang" ]; then
+  exit 1
+fi
+
+opts=("postgresql" "mariadb" "sqlserver" "mysql")
+db="$(printf "%s\n" "${opts[@]}" | fzf)"
+if [ -z "$db" ]; then
+  db = "no db"
+  deps=web,webflux,validation,data-jpa,lombok
+else
+  deps=web,webflux,validation,data-jpa,lombok,$db
+fi
+
+echo "Creating $lang project, using $db"
+
+project=$(basename $PWD)
+package_dir=${PACKAGE_DOMAIN//./\/}/$project
+
+curl https://start.spring.io/starter.zip \
+    -d dependencies=$deps \
+    -d type=gradle-project \
+    -d language=$lang \
+    -d groupId=$PACKAGE_DOMAIN \
+    -d name=$project \
+    -d artifactId=$project \
+    -d description="Generated Springboot Project" \
+    -d packaging=jar \
+    -d javaVersion=17 \
+    -o initializr.zip
+
+unzip initializr.zip 
+rm -rf initializr.zip gradle* src/test
+
+echo "server.port=9090" >> src/main/resources/application.properties
+
+mkdir -p src/main/$lang/$package_dir/{service/impl,controller,repository,model}
+mkdir -p src/test/$lang/$package_dir/{service/impl,controller}
+
+git init
+git add .

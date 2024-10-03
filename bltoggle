@@ -1,0 +1,9 @@
+#!/bin/zsh
+if rfkill list bluetooth | grep -q 'yes$' ; then
+  echo 'bluetooth is blocked, unblocking'
+  rfkill unblock bluetooth
+else
+  echo 'bluetooth is unblocked, blocking'
+  rfkill block bluetooth
+fi
+

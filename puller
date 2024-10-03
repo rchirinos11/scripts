@@ -1,0 +1,44 @@
+#!/bin/zsh
+# Script that takes a git url as input and clones to the directory of choice
+# If the url contains the git_user it will clone with user (ghp) ssh key
+# If the var $WORK_ORG is set and the url contains it it will clone with work (ghw) ssh key
+# SSH key aliases must be configured in ~/.ssh/config
+# Before cloning it will display the clone path in case it needs to be edited
+
+git_user="rchirinos11"
+
+basepath=$(find ~/Code -mindepth 1 -maxdepth 1 -type d | fzf)
+if [ -z "$basepath" ]; then
+  echo "No directory selected"
+  exit 1
+fi
+
+echo -n "Repo: "
+read repo_url
+dirname=$(basename "$repo_url")
+clone_path="$basepath/$dirname"
+
+has_prefix="$(echo "$repo_url" | grep ghw)$(echo "$repo_url" | grep ghp)"
+if [ -z $has_prefix ]; then
+  case $repo_url in
+    *"$WORK_ORG"*) 
+      repo_url="ghw:$WORK_ORG/$dirname"
+      echo "Cloning with ssh instead of https"
+      ;;
+    *"$git_user"*)
+      repo_url="ghp:$git_user/$dirname"
+      echo "Cloning with ssh instead of https"
+      ;;
+  esac
+else
+  echo "Prefix is present, cloning directly with ssh"
+fi
+
+vared -p "Path: " clone_path
+if git clone "$repo_url" "$clone_path" ; then
+  sleep 1
+  sessionizer $clone_path
+else 
+  echo "Exitting"
+  sleep 3
+fi

@@ -1,0 +1,37 @@
+#!/bin/zsh
+# Funny tmux script. Definitely not stolen
+# Switch or create tmux session for each project in ~/Code/* using fzf
+# Starts or attaches a tmux client when called with init arg (Used with foot & sway)
+# Sources a script to detect java version in use
+
+tmux_running=$(pgrep tmux)
+
+if [ "$1" = "init" ]; then
+  if [ -z $tmux_running ]; then $2 -e tmux; else $2 -e tmux a; fi
+  exit 0
+fi
+
+if [ $# -eq 1 ]; then
+  selected=$1
+else
+  selected=$(find ~/Code -mindepth 2 -maxdepth 2 -type d | fzf)
+fi
+
+if [ -z $selected ]; then
+  exit 0
+fi
+
+selected_name=$(basename "$selected" | tr . _)
+
+if [ -z $TMUX ] && [ -z $tmux_running ]; then
+  tmux new -s $selected_name -c $selected
+  exit 0
+fi
+
+if ! tmux has -t $selected_name 2> /dev/null; then
+  tmux new -ds $selected_name -c $selected
+  sleep 0.1
+  tmux send-keys -t $selected_name "source javswitch" ENTER
+fi
+
+tmux switchc -t $selected_name
