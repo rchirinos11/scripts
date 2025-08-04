@@ -1,0 +1,19 @@
+#!/bin/zsh
+# Simple sway status script
+
+while true; do
+  mem=$(free -h | awk '/^Mem:/ {print $3 "/" $2}')
+
+  uptime_formatted=$(uptime | cut -d ',' -f1  | cut -d ' ' -f4,5)
+
+  date_val=$(date +'%d/%m %X')
+
+  linux_version=$(uname -r | cut -d '-' -f1)
+
+  mic=$(pactl get-source-mute $(pactl get-default-source) | cut -d ' ' -f2)
+
+  echo -n "$mic $mem 🖥️ $uptime_formatted ↑ $linux_version 🐧 $date_val"
+
+  sleep 1
+
+done

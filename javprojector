@@ -20,10 +20,10 @@ fi
 opts=("postgresql" "mariadb" "sqlserver" "mysql")
 db="$(printf "%s\n" "${opts[@]}" | fzf)"
 if [ -z "$db" ]; then
-  db = "no db"
-  deps=web,webflux,validation,data-jpa,lombok
+  db="no db"
+  deps=webflux,validation,lombok
 else
-  deps=web,webflux,validation,data-jpa,lombok,$db
+  deps=webflux,validation,data-jpa,lombok,$db
 fi
 
 echo "Creating $lang project, using $db"
