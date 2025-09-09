@@ -2,8 +2,8 @@
 # Needs to be sourced (source javswitch)
 # Requires GRADLE_HOME to be set
 # Script that reads from build.gradle and modifies JAVA_HOME, GRADLE_HOME, and aliases gradle binary
-# Uses gradle 8 with jdk17 and gradle 6.9 with jdk11
-# Only supports java 17 (default) and 11, can probably add more
+# Uses gradle 8 with jdk21 and gradle 6.9 with jdk11
+# Only supports java 21/17 (default) and 11, can probably add more
 # Will be sourced by sessionizer on first tmux session
 
 if [ ! -e ./build.gradle ]; then
@@ -18,15 +18,15 @@ fi
 
 setopt aliases
 
-case $java_ver in 
-  "17") 
+case $java_ver in
+  "17")
     if [ $GRADLE_HOME = "/usr/share/java/gradle" ]; then
-      echo "Using default java version (17)"
+      echo "Using default java version (21)"
       return
     fi
 
-    echo "Java version changed, reverting to default (17)"
-    export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+    echo "Java version changed, reverting to default (21)"
+    export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
     export GRADLE_HOME=/usr/share/java/gradle
     alias gradle="/bin/gradle"
     ;;
